@@ -1,11 +1,12 @@
 import { InputBox } from "../components/InputBox";
+import { User } from "../components/User";
 
 
 
 export function Dashboard(){
     return <div>
       <div className="Header flex justify-between text-3xl shadow-md p-2 font-bold">
-        <span>Paytm</span><span>Hello, User</span>
+        <span>Paytm</span><span>Hello, <span><User icon={"U"}/></span> </span>
       </div>
 
       <div className="mt-8 ml-8">

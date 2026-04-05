@@ -73,11 +73,11 @@ User.put("/edit", userMiddleware, async(req, res) => {
 
 })
 
-User.get("/bulk", userMiddleware, async(req, res) => {
+User.get("/bulk", async(req, res) => {
 
     const filter = req.query.filter || "";
 
-    const AllUser = DBUser.find({
+    const AllUser = await DBUser.find({
         $or:[{
             FirstName: {
                 "$regex": filter
@@ -97,4 +97,6 @@ User.get("/bulk", userMiddleware, async(req, res) => {
         }))
     })
 })
+
+
 module.exports = User

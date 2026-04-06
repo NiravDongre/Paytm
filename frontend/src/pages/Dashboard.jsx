@@ -13,24 +13,6 @@ export function Dashboard(){
   const id = searchParams.get("id")
   const [ amount, setAmount ] = useState(0);
 
-  useEffect(() => {
- const fetchBalance = async () => {
-  const response = await axios.get(
-    "http://localhost:3000/api/v1/account/balance",
-    {
-    params: {
-    id: id
-   },
-    headers: {
-      token: localStorage.getItem("token"),
-      "Content-Type": "application/json"
-    }
-  })
-  setAmount(response.data.Balance)
-
-  fetchBalance()
-}
-},[amount])
 
 
 
@@ -40,7 +22,21 @@ export function Dashboard(){
       </div>
 
       <div className="mt-8 ml-8">
-        <span className="text-2xl font-bold">Your Balance {amount}</span>
+        <button onClick={async() => {
+      const response = await axios.get(
+     "http://localhost:3000/api/v1/account/balance",
+     {
+     params: {
+     id: id
+    },
+     headers: {
+      token: localStorage.getItem("token"),
+      "Content-Type": "application/json"
+    }
+    })
+  setAmount(response.data.Balance)
+
+        }} className="text-2xl font-bold">Your Balance {amount}</button>
       </div>
 
       <Users />

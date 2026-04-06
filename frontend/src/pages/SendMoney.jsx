@@ -3,13 +3,14 @@ import { Headerline } from "../components/Headerline";
 import { InputBox } from "../components/InputBox";
 import { PressingButton } from "../components/PressingButton";
 import { Person } from "../components/Person";
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import axios from "axios";
 import { useState } from "react";
 
 
 
 export function SendMoney(){
+    const navigate = useNavigate()
     const [searchParams] = useSearchParams();
     const [ amount, setAmount ] = useState(0)
     const id = searchParams.get("id");
@@ -34,6 +35,8 @@ export function SendMoney(){
                         "Content-Type": "application/json"
                     }
                 })
+
+                navigate("/thankyou")
             }} label={"Initiate Transfer"}/>
             </div>
         </div>

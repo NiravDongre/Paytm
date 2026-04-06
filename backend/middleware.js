@@ -9,7 +9,8 @@ const userMiddleware = async(req, res, next) => {
         })
     }
     const response = jwt.verify(token, JWT_SECRET);
-   req.userId = response.UserInfo;
+   req.userId = response.IDOFIT;
+   console.log(req.userId)
     next()
 }
 

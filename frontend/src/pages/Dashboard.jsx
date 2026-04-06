@@ -1,18 +1,46 @@
+import { useEffect, useState } from "react";
 import { InputBox } from "../components/InputBox";
-
+import { useSearchParams } from 'react-router-dom';
 import { Person } from "../components/Person";
 import {  Users } from "../components/User";
+import axios from "axios";
 
 
 
 export function Dashboard(){
+
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id")
+  const [ amount, setAmount ] = useState(0);
+
+  useEffect(() => {
+ const fetchBalance = async () => {
+  const response = await axios.get(
+    "http://localhost:3000/api/v1/account/balance",
+    {
+    params: {
+    id: id
+   },
+    headers: {
+      token: localStorage.getItem("token"),
+      "Content-Type": "application/json"
+    }
+  })
+  setAmount(response.data.Balance)
+
+  fetchBalance()
+}
+},[amount])
+
+
+
     return <div>
       <div className="Header flex justify-between text-3xl shadow-md p-2 font-bold">
         <span>Paytm</span><span>Hello, <span><Person icon={"U"}/></span> </span>
       </div>
 
       <div className="mt-8 ml-8">
-        <span className="text-2xl font-bold">Your Balance $5000</span>
+        <span className="text-2xl font-bold">Your Balance {amount}</span>
       </div>
 
       <Users />

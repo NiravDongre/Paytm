@@ -30,9 +30,11 @@ Account.post("/transfer", userMiddleware, async(req, res) => {
     session.startTransaction();
     const { amount, to } = req.body;
 
+    const NumericAmount = Number(amount)
+
     const account = await DBAccount.findOne({userId: req.userId}).session(session);
 
-    if(!account || account.balance < amount){
+    if(!account || account.balance < NumericAmount){
         await session.abortTransaction();
         return res.json({
             message: "Insignificent amount"

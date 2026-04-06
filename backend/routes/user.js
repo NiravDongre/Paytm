@@ -29,6 +29,7 @@ User.post("/signup", async(req, res) => {
     if(user){
         return res.status(201).json({
             token: token,
+            userId: IDOFIT,
             message: "SignedUp"
         })
     }
@@ -44,7 +45,7 @@ User.post("/signin", async(req, res) => {
     })
 
     const token = jwt.sign({
-        UserInfo: user._id
+        IDOFIT: user._id
     }, JWT_SECRET)
 
     return res.status(201).json({

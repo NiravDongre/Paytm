@@ -4,10 +4,11 @@ import { Headerline } from "../components/Headerline";
 import { InputBox } from "../components/InputBox";
 import { PressingButton } from "../components/PressingButton";
 import { SubHead } from "../components/SubHead";
+import { useNavigate } from "react-router-dom";
 
 
 export function Signup(){
-
+    const navigate = useNavigate()
     const [ firstName, setfirstName ] = useState("");
     const [ lastName, setlastName ] = useState("");
     const [ password, setPassword ] = useState("");
@@ -32,12 +33,12 @@ export function Signup(){
 
     <PressingButton onClick={async () => {
         const response = await axios.post("http://localhost:3000/api/v1/user/signup",{
-            firstName,
-            lastName,
-            password
+            FirstName: firstName,
+            LastName: lastName,
+            Password: password
         })
-
         localStorage.setItem("token",response.data.token)
+        navigate("/Dashboard?id=" + response.data.userId)
     }} label={"Sign Up"}/>
 
     </div>

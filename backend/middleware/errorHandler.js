@@ -1,1 +1,1 @@
-# Global error handler (Coming soon)
+// Global error handler (Coming soon)

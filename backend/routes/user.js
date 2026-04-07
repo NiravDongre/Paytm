@@ -1,8 +1,6 @@
 const { Router } = require("express");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
-const { DBUser, DBAccount } = require("../db");
-const userMiddleware = require("../middleware");
+const userMiddleware = require("../middleware/user.middleware");
 
 const User = Router();
 
@@ -10,9 +8,9 @@ User.post("/signup", )
 
 User.post("/signin",)
 
-User.put("/edit", userMiddleware,)
+User.put("/edit", userMiddleware, )
 
-User.get("/bulk", userMiddleware)
+User.get("/bulk", userMiddleware, bu)
 
 
 module.exports = User

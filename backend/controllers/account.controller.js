@@ -1,7 +1,8 @@
-
+const { DBAccount } = require("../models/account")
+const CustomError = require("../utils/CustomError")
 
 const balance = async(req, res, next) => {
-
+    try{
     const account = await DBAccount.findOne({
         userId: req.userId
     })
@@ -15,11 +16,16 @@ const balance = async(req, res, next) => {
     return res.json({
         Balance: account.balance
     })
+
+    }catch(e){
+    const error = new CustomError(403, "Something went wrong")
+}
 }
 
 
 const transfer = async(req, res, next) => {
 
+    try{
     const session = await mongoose.startSession();
 
     session.startTransaction();
@@ -45,14 +51,18 @@ const transfer = async(req, res, next) => {
         })
     }
 
-    await DBAccount.updateOne({userId: to}, {$inc: { balance: amount}}).session(session)
-    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -amount}}).session(session);
+    await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
+    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
 
     await session.commitTransaction()
 
     return res.json({
         message: "Transaction successful"
     })
+    } catch(e){
+        const error = new CustomError(409, "The transaction got canceled")
+        next(error)
+    }
 }
 
 module.exports = {

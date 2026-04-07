@@ -38,7 +38,7 @@ const transfer = async(req, res, next) => {
     if(!account || account.balance < NumericAmount){
         await session.abortTransaction();
         return res.json({
-            message: "Insignificent amount"
+            message: "Insufficent amount"
         })
     }
 

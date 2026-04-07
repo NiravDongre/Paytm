@@ -6,98 +6,13 @@ const userMiddleware = require("../middleware");
 
 const User = Router();
 
-User.post("/signup", async(req, res) => {
-    const { FirstName, LastName, Password } = req.body;
+User.post("/signup", )
 
-    const user = await DBUser.create({
-        FirstName: FirstName,
-        LastName: LastName,
-        Password: Password
-    })
+User.post("/signin",)
 
-    const IDOFIT = user._id
+User.put("/edit", userMiddleware,)
 
-    await DBAccount.create({
-        userId: IDOFIT,
-        balance: 1 + Math.random() * 10000
-    })
-
-    const token = jwt.sign({
-        IDOFIT
-    }, JWT_SECRET);
-
-    if(user){
-        return res.status(201).json({
-            token: token,
-            userId: IDOFIT,
-            message: "SignedUp"
-        })
-    }
-})
-
-User.post("/signin", async(req, res) => {
-
-    const { FirstName, Password } = req.body;
-
-    const user = await DBUser.findOne({
-        FirstName: FirstName,
-        Password: Password
-    })
-
-    const token = jwt.sign({
-        IDOFIT: user._id
-    }, JWT_SECRET)
-
-    return res.status(201).json({
-        message: "SignedIn",
-        token: token
-    })
-})
-
-User.put("/edit", userMiddleware, async(req, res) => {
-    
-    const { Password } = req.body;
-
-    const user = await DBUser.findOneAndUpdate( Password ,{
-        _id: req.userId
-    })
-
-    if(!user){
-        return res.json({
-            message: "Something Broke"
-        })
-    }
-
-    return res.json({
-        message: "Got updated"
-    })
-
-})
-
-User.get("/bulk", async(req, res) => {
-
-    const filter = req.query.filter || "";
-
-    const AllUser = await DBUser.find({
-        $or:[{
-            FirstName: {
-                "$regex": filter
-            }
-        },{
-            LastName: {
-                "$regex": filter
-            }
-        }]
-    })
-
-    return res.json({
-        user: AllUser.map(users => ({
-            FirstName: users.FirstName,
-            LastName: users.LastName,
-            _id: users._id
-        }))
-    })
-})
+User.get("/bulk", userMiddleware)
 
 
 module.exports = User

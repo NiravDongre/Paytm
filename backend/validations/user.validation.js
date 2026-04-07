@@ -19,3 +19,22 @@ const ProtectedSignup = z.object({
     .max(15)
     .min(6)
 })
+
+
+const ProtectedSignin = z.object({
+
+    FirstName: z
+    .string()
+    .trim()
+    .max(20)
+    .min(3),
+
+    Password: z
+    .number()
+    .trim()
+    .max(15)
+    .min(6)
+
+})
+
+module.exports =  { ProtectedSignup , ProtectedSignin }

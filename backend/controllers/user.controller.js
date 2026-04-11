@@ -1,4 +1,6 @@
+const { DBUser } = require("../models/user");
 const CustomError = require("../utils/CustomError");
+
 
 const edit = async(req, res, next) => {
 

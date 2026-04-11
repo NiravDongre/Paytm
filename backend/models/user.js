@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 
 const user = new Schema({
-    FirstName: String,
-    LastName: String,
-    Password: String
+    FirstName: {type: String, required: true},
+    LastName: {type: String, required: true},
+    Password: {type: Number, required: true}
 })
 
 const DBUser = mongoose.model("user", user);

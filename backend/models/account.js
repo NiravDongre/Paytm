@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const accountSchema = new Schema({
     userId : {
         type: Schema.Types.ObjectId,
-        ref: "DBUser",
+        ref: "user",
         required: true
     },
     balance: {
@@ -15,5 +15,4 @@ const accountSchema = new Schema({
 
 const DBAccount = mongoose.model("account", accountSchema)
 
-module.exports = {
-    DBUser, DBAccount }
+module.exports = { DBAccount }

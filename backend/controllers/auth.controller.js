@@ -2,31 +2,29 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const CustomError = require("../utils/CustomError");
 const { ProtectedSignup, ProtectedSignin } = require("../validations/user.validation");
-
 const { DBUser } = require("../models/user");
+const { DBAccount } = require("../models/account");
+const asyncHandler = require("../utils/asyncHandler");
 
 
 
-const signup = async(req, res, next) => {
-
-    try{
+const signup = asyncHandler(async(req, res, next) => {
     const payload = req.body;
     const createpayload = ProtectedSignup.safeParse(payload);
 
     if(!createpayload.success){
-        const error = new CustomError(401 ,"Pls put Correct inputs")
-        next(error)
+        console.log(createpayload.error)
+        throw new CustomError(400 ,"Pls put Correct inputs")
     }
 
-    const { FirstName, LastName, Password } = req.body;
+    const { FirstName, LastName, Password } = createpayload.data;
 
     const existeduser = await DBUser.findOne({
         FirstName: FirstName
     })
 
     if(existeduser){
-        const error = new CustomError(409, "The User is already Signed Up Pls Sign-in to log");
-        next(error)
+        throw new CustomError(409, "The User is already Signed Up Pls Sign-in to log");
     }
 
     const HashedPassword = await bcrypt.hash(Password, 10);
@@ -46,56 +44,47 @@ const signup = async(req, res, next) => {
 
     const token = jwt.sign({
         IDOFIT
-    }, JWT_SECRET);
+    }, process.env.JWT_SECRET);
 
-    if(user){
-        return res.status(201).json({
-            token: token,
-            userId: IDOFIT,
-            message: "SignedUp"
-        })
-    }
+    return res.status(201).json({
+        token: token,
+        userId: IDOFIT,
+        message: "SignedUp"
+    })
 
-} catch(e){
-    const error = new CustomError(400, "Pls try again");
-    next(error)
-}
-}
 
-const signin = async(req, res, next) => {
+})
 
-    try{
+const signin = asyncHandler(async(req, res, next) => {
     const payload = req.body;
     const createpayload = ProtectedSignin.safeParse(payload);
 
     if(!createpayload.success){
-        const error = new CustomError(401, "Pls put Correct Inputs")
-        next(error)
+        throw new CustomError(401, "Pls put Correct Inputs")
     }
 
-    const { FirstName, Password } = req.body;
+    const { FirstName, Password } = createpayload.data;
 
-    const MatchPassword = await bcrypt.compare(Password)
+    const MatchPassword = await bcrypt.compare(Password, user.Password)
+
+    if(!MatchPassword){
+        throw new CustomError(401, "Wrong Password")
+    }
 
     const user = await DBUser.findOne({
         FirstName: FirstName,
-        Password: MatchPassword
     })
 
     const token = jwt.sign({
         IDOFIT: user._id
     }, JWT_SECRET)
 
-    return res.status(201).json({
+    return res.status(200).json({
         message: "SignedIn",
         token: token
     })
 
-} catch(e){
-    const error = new CustomError(400, "Pls try again");
-    next(error)
-}
-}
+})
 
 module.exports = {
     signup, signin

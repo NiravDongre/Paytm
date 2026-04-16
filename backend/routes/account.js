@@ -1,8 +1,7 @@
 const { Router } = require("express");
 const mongoose = require("mongoose");
-const { DBAccount } = require("../db");
 const { balance, transfer } = require("../controllers/account.controller");
-const userMiddleware = require("../middleware/user.middleware");
+const userMiddleware = require("../middleware/authmiddleware");
 
 const Account = Router();
 

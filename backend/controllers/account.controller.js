@@ -1,5 +1,5 @@
 const { DBAccount } = require("../models/account")
-const { TransactionModel } = require("../models/transcations")
+const { TransactionModel } = require("../models/transcation")
 const CustomError = require("../utils/CustomError")
 const asyncHandler = require("../utils/asyncHandler")
 
@@ -9,7 +9,7 @@ const balance = asyncHandler(async(req, res, next) => {
     })
 
     if(!account){
-        return next(new CustomError("Account not found", 404))
+        return next(new CustomError(404, "Account not found"))
     }
 
     return res.json({
@@ -41,9 +41,7 @@ const transfer = async(req, res, next) => {
 
     if(!toAccount){
         await session.abortTransaction()
-        return res.json({
-            message: "the receiver does not exists"
-        })
+        return  next(new CustomError(404 ,"the receiver does not exists"))
     }
 
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)

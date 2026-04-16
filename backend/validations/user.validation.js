@@ -14,7 +14,7 @@ const ProtectedSignup = z.object({
     .min(3),
 
     Password: z
-    .number()
+    .string()
     .trim()
     .max(15)
     .min(6)
@@ -30,7 +30,7 @@ const ProtectedSignin = z.object({
     .min(3),
 
     Password: z
-    .number()
+    .string()
     .trim()
     .max(15)
     .min(6)

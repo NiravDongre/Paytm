@@ -5,10 +5,18 @@ const { ProtectedSignup, ProtectedSignin } = require("../validations/user.valida
 const { DBUser } = require("../models/user");
 const { DBAccount } = require("../models/account");
 const asyncHandler = require("../utils/asyncHandler");
+const  mongoose  = require("mongoose");
 
 
 
 const signup = asyncHandler(async(req, res, next) => {
+    
+    const session = await mongoose.startSession();
+
+    try{
+
+    session.startTransaction();
+
     const payload = req.body;
     const createpayload = ProtectedSignup.safeParse(payload);
 
@@ -21,9 +29,10 @@ const signup = asyncHandler(async(req, res, next) => {
 
     const existeduser = await DBUser.findOne({
         FirstName: FirstName
-    })
+    }).session(session)
 
     if(existeduser){
+        await session.abortTransaction()
         throw new CustomError(409, "The User is already Signed Up Pls Sign-in to log");
     }
 
@@ -33,25 +42,32 @@ const signup = asyncHandler(async(req, res, next) => {
         FirstName: FirstName,
         LastName: LastName,
         Password: HashedPassword
-    })
+    }, {session })
 
     const IDOFIT = user._id
 
     await DBAccount.create({
         userId: IDOFIT,
         balance: 1 + Math.random() * 10000
-    })
+    }, { session })
 
     const token = jwt.sign({
         IDOFIT
     }, process.env.JWT_SECRET);
+
+    await session.commitTransaction()
+    session.endSession()
 
     return res.status(201).json({
         token: token,
         userId: IDOFIT,
         message: "SignedUp"
     })
-
+}catch(err){
+    await session.abortTransaction()
+    session.endSession()
+    throw new CustomError("Something went wrong")
+}
 
 })
 

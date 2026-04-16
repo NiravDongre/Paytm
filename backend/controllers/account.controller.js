@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 const { DBAccount } = require("../models/account")
 const { TransactionModel } = require("../models/transcation")
 const CustomError = require("../utils/CustomError")
@@ -18,23 +19,24 @@ const balance = asyncHandler(async(req, res, next) => {
 })
 
 
-const transfer = async(req, res, next) => {
+const transfer = asyncHandler(async(req, res, next) => {
 
+   const session = await mongoose.startSession();
     try{
-    const session = await mongoose.startSession();
-
     session.startTransaction();
+
     const { amount, to } = req.body;
 
     const NumericAmount = Number(amount)
 
+    if(!NumericAmount || NumericAmount <= 0){
+        throw new CustomError(400, "insufficient amount")
+    }
+
     const account = await DBAccount.findOne({userId: req.userId}).session(session);
 
     if(!account || account.balance < NumericAmount){
-        await session.abortTransaction();
-        return res.json({
-            message: "Insufficent amount"
-        })
+        throw new CustomError(400, "Insufficent amount")
     }
 
     const toAccount = await DBAccount.findOne({userId: to}).session(session)
@@ -54,15 +56,19 @@ const transfer = async(req, res, next) => {
 
 
     await session.commitTransaction()
+    await session.endSession()
 
-    return res.json({
+    return res.status(200).json({
         message: "Transaction successful"
     })
-    } catch(e){
-        const error = new CustomError(409, "The transaction got canceled")
-        next(error)
+
+    } catch(err){
+        await session.abortTransaction();
+        session.endSession();
+        throw err
     }
-}
+
+})
 
 module.exports = {
     balance, transfer

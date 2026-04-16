@@ -1,10 +1,9 @@
 const { DBUser } = require("../models/user");
+const asyncHandler = require("../utils/asyncHandler");
 const CustomError = require("../utils/CustomError");
 
 
-const edit = async(req, res, next) => {
-
-    try{
+const edit = asyncHandler(async(req, res, next) => {
     const { Password } = req.body;
 
     const user = await DBUser.findOneAndUpdate(
@@ -17,20 +16,14 @@ const edit = async(req, res, next) => {
             message: "Something Broke"
         })
     }
-
     return res.json({
         message: "Got updated"
     })
-    } catch(e){
-        const error = new CustomError(400, "Can not edit the password")
-        next(error)
-    }
-}
+})
 
 
-const bulk = async(req, res, next) => {
+const bulk = asyncHandler(async(req, res, next) => {
 
-    try{
     const filter = req.query.filter || "";
 
     const AllUser = await DBUser.find({
@@ -52,11 +45,7 @@ const bulk = async(req, res, next) => {
             _id: users._id
         }))
     })
-    } catch(e){
-        const error = new CustomError(404, "User not found");
-        next(error)
-    }
-}
+})
 
 module.exports = {
     edit, bulk

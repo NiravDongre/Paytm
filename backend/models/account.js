@@ -9,7 +9,8 @@ const accountSchema = new Schema({
     },
     balance: {
         type: Number,
-        balance: true
+        required: true,
+        default: 0
     }
 })
 

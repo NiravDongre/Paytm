@@ -1,32 +1,46 @@
+const { DBAccount } = require("../models/account")
 const { TransactionModel } = require("../models/transcations")
+const asyncHandler = require("../utils/asyncHandler")
 const CustomError = require("../utils/CustomError")
 
 
 
-const history = async (req, res, next) => {
-    try{
+const history = asyncHandler(async(req, res, next) => {
 
-        const transaction = await TransactionModel.find({
-            $or:[
-                { fromAccount: req.userId },
-                { toAccount: req.userId}
-            ]
-        })
+    const account = await DBAccount.findOne({ userId: req.userId })
 
-        if(!transaction){
-            const error = new CustomError("No Transaction history", 400)
-            next(error)
-        }
-
-        return res.status(200).json({
-            Transaction: transaction
-        })
-
-    }catch(e){
-        const error = new CustomError("Not Found", 404);
-        next(error)
+    if(!account){
+        return next(new CustomError("Account not found", 404))
     }
-}
+
+    const transaction = {
+        $or:[
+            { fromAccount: account._id },
+            { toAccount: account._id}
+        ]
+    }
+
+    const page = req.query.page*1 || 1;
+    const limit = req.query.limit*1 || 10;
+    const skip = ( page - 1) * limit
+
+    const transactioncount = await TransactionModel.countDocuments(transaction);
+
+    if(skip >= transactioncount){
+        return next(new CustomError("Page not Found", 404))
+    }
+
+    const transactions = await TransactionModel
+    .find(filter)
+    .skip(skip)
+    .limit(limit)
+
+    return res.status(200).json({
+        results: transactions.length,
+        transactioncount,
+        data: transactions
+   })
+})
 
 
 module.exports = { history }

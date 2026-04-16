@@ -13,9 +13,6 @@ export function Dashboard(){
   const id = searchParams.get("id")
   const [ amount, setAmount ] = useState(0);
 
-
-
-
     return <div>
       <div className="Header flex justify-between text-3xl shadow-md p-2 font-bold">
         <span>Paytm</span><span>Hello, <span><Person icon={"U"}/></span> </span>

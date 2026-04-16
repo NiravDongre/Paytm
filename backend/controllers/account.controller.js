@@ -57,7 +57,7 @@ const transfer = async(req, res, next) => {
     await TransactionModel.create([{ 
         fromAccount: req.userId,
         toAccount: to,
-        amount: amount
+        amount: NumericAmount
     }], { session })
 
 

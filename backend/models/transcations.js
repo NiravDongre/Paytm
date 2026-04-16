@@ -15,31 +15,16 @@ const transaction = new Schema({
         require: true,
         index: true
     },
-    status : {
-        type: String,
-        enum: { 
-            value: ["Pending", "Complete", "Failed"]
-        },
-        default: "Pending"
-    },
     amount : {
         type: Number,
         required : true,
         min: [0]
-    },
-    idempotencykey : {
-        type: String,
-        required: true,
-        unique: true,
-        index: true
     }
-}, {
+},{
     timestamps: true
 })
 
-
 const TransactionModel = mongoose.model("transactions", transaction);
-
 module.exports = {
     TransactionModel
 }

@@ -1,4 +1,5 @@
 const { DBAccount } = require("../models/account")
+const { TransactionModel } = require("../models/transcations")
 const CustomError = require("../utils/CustomError")
 
 const balance = async(req, res, next) => {
@@ -53,6 +54,12 @@ const transfer = async(req, res, next) => {
 
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
     await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
+    await TransactionModel.create([{ 
+        fromAccount: req.userId,
+        toAccount: to,
+        amount: amount
+    }], { session })
+
 
     await session.commitTransaction()
 

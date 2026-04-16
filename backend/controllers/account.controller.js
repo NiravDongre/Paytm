@@ -1,27 +1,21 @@
 const { DBAccount } = require("../models/account")
 const { TransactionModel } = require("../models/transcations")
 const CustomError = require("../utils/CustomError")
+const asyncHandler = require("../utils/asyncHandler")
 
-const balance = async(req, res, next) => {
-    try{
+const balance = asyncHandler(async(req, res, next) => {
     const account = await DBAccount.findOne({
         userId: req.userId
     })
 
     if(!account){
-        return res.json({
-            message: "NO account found"
-        })
+        return next(new CustomError("Account not found", 404))
     }
 
     return res.json({
         Balance: account.balance
     })
-
-    }catch(e){
-    const error = new CustomError(403, "Something went wrong")
-}
-}
+})
 
 
 const transfer = async(req, res, next) => {

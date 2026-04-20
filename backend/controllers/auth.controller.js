@@ -10,7 +10,7 @@ const  mongoose  = require("mongoose");
 
 
 const signup = asyncHandler(async(req, res, next) => {
-    
+
     const session = await mongoose.startSession();
 
     try{
@@ -32,24 +32,24 @@ const signup = asyncHandler(async(req, res, next) => {
     }).session(session)
 
     if(existeduser){
-        await session.abortTransaction()
         throw new CustomError(409, "The User is already Signed Up Pls Sign-in to log");
     }
 
     const HashedPassword = await bcrypt.hash(Password, 10);
 
-    const user = await DBUser.create({
+    const userArr = await DBUser.create([{
         FirstName: FirstName,
         LastName: LastName,
         Password: HashedPassword
-    }, {session })
-
+    }], {session })
+    
+    const user = userArr[0]
     const IDOFIT = user._id
 
-    await DBAccount.create({
+    await DBAccount.create([{
         userId: IDOFIT,
         balance: 1 + Math.random() * 10000
-    }, { session })
+    }], { session })
 
     const token = jwt.sign({
         IDOFIT
@@ -63,12 +63,11 @@ const signup = asyncHandler(async(req, res, next) => {
         userId: IDOFIT,
         message: "SignedUp"
     })
-}catch(err){
+   }catch(err){
     await session.abortTransaction()
     session.endSession()
-    throw new CustomError("Something went wrong")
-}
-
+    throw err
+   }
 })
 
 const signin = asyncHandler(async(req, res, next) => {
@@ -96,6 +95,7 @@ const signin = asyncHandler(async(req, res, next) => {
     }, JWT_SECRET)
 
     return res.status(200).json({
+        status: "success",
         message: "SignedIn",
         token: token
     })

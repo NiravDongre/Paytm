@@ -17,12 +17,13 @@ const edit = asyncHandler(async(req, res, next) => {
         })
     }
     return res.json({
+        status: "success",
         message: "Got updated"
     })
 })
 
 
-const bulk = asyncHandler(async(req, res, next) => {
+const bulk = asyncHandler(async(req, res) => {
 
     const filter = req.query.filter || "";
 
@@ -39,6 +40,7 @@ const bulk = asyncHandler(async(req, res, next) => {
     })
 
     return res.json({
+        status: "success",
         user: AllUser.map(users => ({
             FirstName: users.FirstName,
             LastName: users.LastName,

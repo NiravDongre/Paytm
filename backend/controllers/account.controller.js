@@ -14,6 +14,7 @@ const balance = asyncHandler(async(req, res, next) => {
     }
 
     return res.json({
+        status: "success",
         Balance: account.balance
     })
 })
@@ -29,8 +30,8 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     const NumericAmount = Number(amount)
 
-    if(!NumericAmount || NumericAmount <= 0){
-        throw new CustomError(400, "insufficient amount")
+    if(isNaN(NumericAmount) || NumericAmount <= 0){
+        throw new CustomError(400, "invalid amount")
     }
 
     const account = await DBAccount.findOne({userId: req.userId}).session(session);
@@ -64,7 +65,7 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     } catch(err){
         await session.abortTransaction();
-        session.endSession();
+        await session.endSession();
         throw err
     }
 

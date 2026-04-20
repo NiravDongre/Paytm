@@ -1,4 +1,10 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const CustomError = require("../utils/CustomError");
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if(!JWT_SECRET){
+    throw new CustomError(401, "jsonwebtoken is required")
+}
 
 const main = async () => {
 try{
@@ -10,4 +16,7 @@ try{
 
 }
 
-module.exports = main
+module.exports = {
+    JWT_SECRET: JWT_SECRET
+    ,main
+}

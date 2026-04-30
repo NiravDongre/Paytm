@@ -19,6 +19,19 @@ const transaction = new Schema({
         type: Number,
         required : true,
         min: [0]
+    },
+    idempotencykey: {
+        type: string,
+        required: true,
+        index: true,
+        unique: true
+    },
+    Status: {
+        type: String,
+        enum: {
+            value: ["PENDING", "COMPLETED", "FAILED"]
+        },
+        default: "PENDING"
     }
 },{
     timestamps: true

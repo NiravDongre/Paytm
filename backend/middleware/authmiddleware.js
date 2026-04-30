@@ -14,10 +14,10 @@ const userMiddleware = async (req, res, next) => {
   const token = authorization.split(" ")[1]
 
   if(!token){
-      return res.json({
-          message: "token is not present"
-    })
-  }
+    return res.json({
+      message: "token is not present"
+  })
+}
 
   const response = jwt.verify(token, JWT_SECRET);
   req.userId = response.IDOFIT;

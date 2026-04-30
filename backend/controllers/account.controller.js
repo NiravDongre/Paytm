@@ -81,7 +81,7 @@ const transfer = asyncHandler(async(req, res, next) => {
         fromAccount: req.userId,
         toAccount: to,
         amount: NumericAmount,
-        idempotencykey,
+        idempotencykey: idempotencykey,
         Status: "PENDING"
     }], { session })
 

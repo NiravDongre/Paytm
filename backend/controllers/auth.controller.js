@@ -146,5 +146,5 @@ const loggout = asyncHandler(async(req, res) => {
 })
 
 module.exports = {
-    signup, signin
+    signup, signin, loggout
 }

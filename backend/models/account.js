@@ -12,7 +12,7 @@ const accountSchema = new Schema({
         required: true,
         default: 0
     }
-})
+}, {timestamps: true})
 
 const DBAccount = mongoose.model("account", accountSchema)
 

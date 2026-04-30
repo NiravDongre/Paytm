@@ -30,11 +30,8 @@ const bulk = asyncHandler(async(req, res) => {
     const filter = req.query.filter || "";
 
     const AllUser = await DBUser.find({
-        $or:[{
-            UserName: {
-                "$regex": filter
-            }
-        }]
+        _id: { $ne: userId},
+        UserName: { "$regex": filter, "$options": "i" }
     })
 
     return res.json({

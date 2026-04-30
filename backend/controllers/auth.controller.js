@@ -6,6 +6,7 @@ const { DBUser } = require("../models/user");
 const { DBAccount } = require("../models/account");
 const asyncHandler = require("../utils/asyncHandler");
 const  mongoose  = require("mongoose");
+const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = require("../config/config");
 
 
 
@@ -25,10 +26,10 @@ const signup = asyncHandler(async(req, res, next) => {
         throw new CustomError(400 ,"Pls put Correct inputs")
     }
 
-    const { FirstName, LastName, Password } = createpayload.data;
+    const { UserName, Email, Password } = createpayload.data;
 
     const existeduser = await DBUser.findOne({
-        FirstName: FirstName
+        UserName: UserName
     }).session(session)
 
     if(existeduser){
@@ -38,8 +39,8 @@ const signup = asyncHandler(async(req, res, next) => {
     const HashedPassword = await bcrypt.hash(Password, 10);
 
     const userArr = await DBUser.create([{
-        FirstName: FirstName,
-        LastName: LastName,
+        UserName: UserName,
+        Email: Email,
         Password: HashedPassword
     }], {session })
     
@@ -51,15 +52,25 @@ const signup = asyncHandler(async(req, res, next) => {
         balance: 1 + Math.random() * 10000
     }], { session })
 
-    const token = jwt.sign({
+    const accessToken = jwt.sign({
         IDOFIT
-    }, process.env.JWT_SECRET);
+    }, ACCESS_JWT_SECRET,{
+        expiresIn: "15m"
+    });
+
+    const refreshToken = jwt.sign({
+        IDOFIT
+    }, REFRESH_JWT_SECRET,{
+        expiresIn: "15d"
+    });
 
     await session.commitTransaction()
     session.endSession()
 
     return res.status(201).json({
-        token: token,
+        status: "success",
+        accessToken: accessToken,
+        refreshTOken: refreshToken,
         userId: IDOFIT,
         message: "SignedUp"
     })
@@ -71,33 +82,48 @@ const signup = asyncHandler(async(req, res, next) => {
 })
 
 const signin = asyncHandler(async(req, res, next) => {
+
     const payload = req.body;
     const createpayload = ProtectedSignin.safeParse(payload);
 
     if(!createpayload.success){
-        throw new CustomError(401, "Pls put Correct Inputs")
+        return next( new CustomError(401, "Pls put Correct Inputs"))
     }
 
-    const { FirstName, Password } = createpayload.data;
+    const { UserName, Password } = createpayload.data;
+
+    const user = await DBUser.findOne({
+        UserName: UserName,
+    })
+
+    if(!user){
+        return next(new CustomError(404, "User not Found"))
+    }
 
     const MatchPassword = await bcrypt.compare(Password, user.Password)
 
     if(!MatchPassword){
-        throw new CustomError(401, "Wrong Password")
+        return next(new CustomError(401, "Wrong Password"))
     }
 
-    const user = await DBUser.findOne({
-        FirstName: FirstName,
-    })
 
-    const token = jwt.sign({
+    const accessToken = jwt.sign({
         IDOFIT: user._id
-    }, JWT_SECRET)
+    }, ACCESS_JWT_SECRET,{
+        expiresIn: "15m"
+    });
+
+    const refreshToken = jwt.sign({
+        IDOFIT: user._id
+    }, REFRESH_JWT_SECRET,{
+        expiresIn: "15d"
+    });
 
     return res.status(200).json({
         status: "success",
         message: "SignedIn",
-        token: token
+        accessToken: accessToken,
+        refreshTOken: refreshToken,
     })
 
 })

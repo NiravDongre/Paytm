@@ -1,17 +1,15 @@
 const { z } = require("zod")
 
 const ProtectedSignup = z.object({
-    FirstName: z
+    UserName: z
     .string()
     .trim()
-    .max(20)
+    .max(40)
     .min(3),
 
-    LastName: z
-    .string()
-    .trim()
-    .max(20)
-    .min(3),
+    Email: z
+    .email()
+    .trim(),
 
     Password: z
     .string()
@@ -23,10 +21,10 @@ const ProtectedSignup = z.object({
 
 const ProtectedSignin = z.object({
 
-    FirstName: z
+    UserName: z
     .string()
     .trim()
-    .max(20)
+    .max(40)
     .min(3),
 
     Password: z

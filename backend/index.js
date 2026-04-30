@@ -6,7 +6,7 @@ const mongoSanitize = require("express-mongo-sanitize")
 const helmet = require("helmet");
 const router = require("./routes/main-router");
 const ERROR = require("./middleware/errorHandler");
-const ConnectDB = require("./config/config")
+const { main } = require("./config/config");
 
 const app = express();
 
@@ -17,7 +17,7 @@ const limiter = ratelimit({
 })
 
 app.use(express.json());
-app.use(mongoSanitize())
+// app.use(mongoSanitize())
 app.use(helmet())
 app.use("/api/v1", limiter)
 app.use(cors());
@@ -26,7 +26,7 @@ app.use(ERROR);
 
 const PORT = process.env.PORT || 3000
 
-ConnectDB().then(() => {
+main().then(() => {
   app.listen(PORT, () => {
     console.log(`Server is running on Port ${PORT}`)
   })

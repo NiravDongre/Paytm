@@ -25,15 +25,13 @@ const edit = asyncHandler(async(req, res, next) => {
 
 const bulk = asyncHandler(async(req, res) => {
 
+    const userId = req.userId;
+
     const filter = req.query.filter || "";
 
     const AllUser = await DBUser.find({
         $or:[{
-            FirstName: {
-                "$regex": filter
-            }
-        },{
-            LastName: {
+            UserName: {
                 "$regex": filter
             }
         }]
@@ -48,6 +46,7 @@ const bulk = asyncHandler(async(req, res) => {
         }))
     })
 })
+
 
 module.exports = {
     edit, bulk

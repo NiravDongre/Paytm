@@ -26,7 +26,7 @@ const transfer = asyncHandler(async(req, res, next) => {
     try{
     session.startTransaction();
 
-    const { amount, to } = req.body;
+    const { amount, to, idempotencykey } = req.body;
 
     const NumericAmount = Number(amount)
 
@@ -47,14 +47,49 @@ const transfer = asyncHandler(async(req, res, next) => {
         return  next(new CustomError(404 ,"the receiver does not exists"))
     }
 
-    await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
-    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
-    await TransactionModel.create([{ 
+    if(!idempotencykey){
+        await session.abortTransaction()
+        return next(new CustomError(404, "Idempotency key is required"))
+    }
+
+    const isIdempotencykeyExisted = await TransactionModel.findOne({
+        idempotencykey: idempotencykey
+    })
+    if(isIdempotencykeyExisted){
+
+        if(isIdempotencykeyExisted.Status === "COMPLETED"){
+            return res.status(200).json({
+                message: "Transaction already processed",
+                transaction: isIdempotencykeyExisted
+            })
+        }
+
+        if(isIdempotencykeyExisted.Status === "PENDING"){
+            return res.status(200).json({
+                message: "Transaction is still processing"
+            })
+        }
+
+        if(isIdempotencykeyExisted.Status === "FAILED"){
+            return res.status(500).json({
+                message: "Transaction processing failed, please retry"
+            })
+        }
+    }
+
+    const transaction = await TransactionModel.create([{ 
         fromAccount: req.userId,
         toAccount: to,
-        amount: NumericAmount
+        amount: NumericAmount,
+        idempotencykey,
+        Status: "PENDING"
     }], { session })
 
+    await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
+    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
+
+    transaction.Status = "COMPLETED";
+    await transaction.save({ session })
 
     await session.commitTransaction()
     await session.endSession()

@@ -119,6 +119,9 @@ const signin = asyncHandler(async(req, res, next) => {
         expiresIn: "15d"
     });
 
+    user.RefreshToken = refreshToken;
+    await user.save()
+
     return res.status(200).json({
         status: "success",
         message: "SignedIn",
@@ -126,6 +129,20 @@ const signin = asyncHandler(async(req, res, next) => {
         refreshTOken: refreshToken,
     })
 
+})
+
+const loggout = asyncHandler(async(req, res) => {
+
+    const userId = req.userId
+
+    const user = await DBUser.findById(userId)
+
+    user.RefreshToken = null;
+    await user.save();
+
+    return res.status(200).json({
+        message: "User logged out"
+    })
 })
 
 module.exports = {

@@ -21,16 +21,14 @@ const transaction = new Schema({
         min: [0]
     },
     idempotencykey: {
-        type: string,
+        type: String,
         required: true,
         index: true,
         unique: true
     },
     Status: {
         type: String,
-        enum: {
-            value: ["PENDING", "COMPLETED", "FAILED"]
-        },
+        enum: ["PENDING", "COMPLETED", "FAILED"],
         default: "PENDING"
     }
 },{

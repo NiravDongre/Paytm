@@ -17,7 +17,7 @@ const limiter = ratelimit({
 })
 
 app.use(express.json());
-// app.use(mongoSanitize())
+app.use(mongoSanitize())
 app.use(helmet())
 app.use("/api/v1", limiter)
 app.use(cors());

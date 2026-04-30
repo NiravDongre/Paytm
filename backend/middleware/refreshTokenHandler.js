@@ -24,7 +24,7 @@ const RefreshTokenHandler = asyncHandler(async(req, res) => {
         throw new CustomError(404, "User not found")
     }
 
-    if(! user.RefreshToken !== token ){
+    if (user.RefreshToken !== token) {
         throw new CustomError(401, "Expired token or Invalid token")
     }
 

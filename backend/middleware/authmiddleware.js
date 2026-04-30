@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const CustomError = require("../utils/CustomError");
-const { JWT_SECRET } = require("../config/config");
+const { ACCESS_JWT_SECRET } = require("../config/config");
 
 
 const userMiddleware = async (req, res, next) => {
@@ -19,7 +19,7 @@ const userMiddleware = async (req, res, next) => {
   })
 }
 
-  const response = jwt.verify(token, JWT_SECRET);
+  const response = jwt.verify(token, ACCESS_JWT_SECRET);
   req.userId = response.IDOFIT;
 
   next()

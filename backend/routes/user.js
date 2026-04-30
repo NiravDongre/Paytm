@@ -6,6 +6,10 @@ const { signup, signin, loggout } = require("../controllers/auth.controller");
 
 const User = Router();
 
+User.get("/", (req, res) => {
+    res.send("hello brother")
+})
+
 User.post("/signup", signup)
 
 User.post("/signin", signin)

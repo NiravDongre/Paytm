@@ -55,8 +55,8 @@ const transfer = asyncHandler(async(req, res, next) => {
     const isIdempotencykeyExisted = await TransactionModel.findOne({
         idempotencykey: idempotencykey
     })
-    if(isIdempotencykeyExisted){
 
+    if(isIdempotencykeyExisted){
         if(isIdempotencykeyExisted.Status === "COMPLETED"){
             return res.status(200).json({
                 message: "Transaction already processed",
@@ -77,13 +77,13 @@ const transfer = asyncHandler(async(req, res, next) => {
         }
     }
 
-    const transaction = await TransactionModel.create([{ 
-        fromAccount: req.userId,
-        toAccount: to,
+    const transaction = await TransactionModel.create({ 
+        fromAccount: account._id,
+        toAccount: toAccount._id,
         amount: NumericAmount,
         idempotencykey: idempotencykey,
         Status: "PENDING"
-    }], { session })
+    }, { session })
 
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
     await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);

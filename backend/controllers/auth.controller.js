@@ -64,13 +64,16 @@ const signup = asyncHandler(async(req, res, next) => {
         expiresIn: "15d"
     });
 
+    user.RefreshToken = refreshToken;
+    await user.save()
+
     await session.commitTransaction()
     session.endSession()
 
     return res.status(201).json({
         status: "success",
         accessToken: accessToken,
-        refreshTOken: refreshToken,
+        refreshToken: refreshToken,
         userId: IDOFIT,
         message: "SignedUp"
     })
@@ -126,7 +129,7 @@ const signin = asyncHandler(async(req, res, next) => {
         status: "success",
         message: "SignedIn",
         accessToken: accessToken,
-        refreshTOken: refreshToken,
+        refreshToken: refreshToken,
     })
 
 })

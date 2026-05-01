@@ -7,6 +7,7 @@ const { DBAccount } = require("../models/account");
 const asyncHandler = require("../utils/asyncHandler");
 const  mongoose  = require("mongoose");
 const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = require("../config/config");
+const logger = require("../utils/logger");
 
 
 
@@ -19,10 +20,20 @@ const signup = asyncHandler(async(req, res, next) => {
     session.startTransaction();
 
     const payload = req.body;
+
+    logger.info("Signing Up attempt", {
+        username: payload?.UserName,
+        email: payload?.Email,
+    })
+
     const createpayload = ProtectedSignup.safeParse(payload);
 
+
+
     if(!createpayload.success){
-        console.log(createpayload.error)
+        logger.warn("Signup validation failed", {
+            error: createpayload.error,
+        })
         throw new CustomError(400 ,"Pls put Correct inputs")
     }
 
@@ -33,6 +44,9 @@ const signup = asyncHandler(async(req, res, next) => {
     }).session(session)
 
     if(existeduser){
+        logger.info("User already existed",{
+            UserName
+        })
         throw new CustomError(409, "The User is already Signed Up Pls Sign-in to log");
     }
 
@@ -70,6 +84,12 @@ const signup = asyncHandler(async(req, res, next) => {
     await session.commitTransaction()
     session.endSession()
 
+    logger.info("User signed-up Successfully", {
+        userId: IDOFIT,
+        username: UserName,
+        email: Email
+    })
+
     return res.status(201).json({
         status: "success",
         accessToken: accessToken,
@@ -80,6 +100,12 @@ const signup = asyncHandler(async(req, res, next) => {
    }catch(err){
     await session.abortTransaction()
     session.endSession()
+
+    logger.error("SignedUp Failed", {
+        message: err.message,
+        username: req.body?.UserName,
+        email: req.body?.Email,
+    })
     throw err
    }
 })

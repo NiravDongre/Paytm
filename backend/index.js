@@ -8,6 +8,7 @@ const router = require("./routes/main-router");
 const ERROR = require("./middleware/errorHandler");
 const { main } = require("./config/config");
 const logger = require("./utils/logger");
+const loggerMiddleware = require("./middleware/loggermiddleware");
 
 const app = express();
 
@@ -17,12 +18,16 @@ const limiter = ratelimit({
   message: "Please try again after 15 minutes"
 })
 
+app.use(loggerMiddleware)
+
 app.use(express.json());
 app.use(mongoSanitize())
 app.use(helmet())
-app.use("/api/v1", limiter)
 app.use(cors());
+
+app.use("/api/v1", limiter)
 app.use("/api/v1/", router);
+
 app.use(ERROR);
 
 const PORT = process.env.PORT || 3000

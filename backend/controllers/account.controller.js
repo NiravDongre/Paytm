@@ -3,6 +3,7 @@ const { DBAccount } = require("../models/account")
 const { TransactionModel } = require("../models/transcation")
 const CustomError = require("../utils/CustomError")
 const asyncHandler = require("../utils/asyncHandler")
+const logger = require("../utils/logger")
 
 const balance = asyncHandler(async(req, res, next) => {
     const account = await DBAccount.findOne({
@@ -10,6 +11,7 @@ const balance = asyncHandler(async(req, res, next) => {
     })
 
     if(!account){
+        logger.warn("User's account not found", { account })
         return next(new CustomError(404, "Account not found"))
     }
 
@@ -26,28 +28,42 @@ const transfer = asyncHandler(async(req, res, next) => {
     try{
     session.startTransaction();
 
+    const userId = req.userId
     const { amount, to, idempotencykey } = req.body;
 
     const NumericAmount = Number(amount)
 
     if(isNaN(NumericAmount) || NumericAmount <= 0){
+        logger.warn("invalid amount", {
+            NumericAmount
+        })
         throw new CustomError(400, "invalid amount")
     }
 
     const account = await DBAccount.findOne({userId: req.userId}).session(session);
 
     if(!account || account.balance < NumericAmount){
+        logger.warn("Insufficent amount", {
+            account,
+            NumericAmount
+        })
         throw new CustomError(400, "Insufficent amount")
     }
 
     const toAccount = await DBAccount.findOne({userId: to}).session(session)
 
     if(!toAccount){
+        logger.warn("the receiver does not exists", {
+            toAccount
+        })
         await session.abortTransaction()
         return  next(new CustomError(404 ,"the receiver does not exists"))
     }
 
     if(!idempotencykey){
+        logger.warn("Idempotency key is required",{
+            idempotencykey
+        })
         await session.abortTransaction()
         return next(new CustomError(404, "Idempotency key is required"))
     }
@@ -85,6 +101,13 @@ const transfer = asyncHandler(async(req, res, next) => {
         Status: "PENDING"
     }, { session })
 
+    logger.info("Transaction Successed", {
+            userId,
+            amount,
+            to,
+            idempotencykey,
+    })
+
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
     await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
 
@@ -99,9 +122,15 @@ const transfer = asyncHandler(async(req, res, next) => {
     })
 
     } catch(err){
+        logger.error("Transaction Failed", {
+            userId,
+            amount,
+            to,
+            idempontencykey
+        })
         await session.abortTransaction();
         await session.endSession();
-        throw err
+        next(err)
     }
 
 })

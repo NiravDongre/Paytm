@@ -3,13 +3,26 @@ const logger = require("../utils/logger");
 
 
 
-const loggerMiddleware = asyncHandler(async (req, res, next) => {
+const loggerMiddleware = (req, res, next) => {
+
+    const start =  Date.now();
+
     logger.info("Incoming request", {
     Method: req.method,
-    url: req.url,
+    url: req.originalUrlUrl,
     ip: req.ip
-})
+    })
+
+    res.on("finish", () => {
+        logger.info("Request complete", {
+            Method: req.method,
+            url: req.originalUrl,
+            status: res.statusCode,
+            duration: `${Date.now() - start}ms`
+        })
+    })
+
     next()
-})
+}
 
 module.exports = loggerMiddleware

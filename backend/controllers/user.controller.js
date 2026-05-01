@@ -6,16 +6,21 @@ const CustomError = require("../utils/CustomError");
 const edit = asyncHandler(async(req, res, next) => {
     const { Password } = req.body;
 
+    logger.info("attempting to change the password")
+
     const user = await DBUser.findOneAndUpdate(
         { _id: req.userId },
         { Password }
     )
 
     if(!user){
-        return res.json({
-            message: "Something Broke"
+        logger.warn("Couldn't found user to change the password")
+        return res.status(404).json({
+            message: "Couldn't found user to change the password"
         })
     }
+
+    logger.info("Successfully attempt to update the password")
     return res.json({
         status: "success",
         message: "Got updated"

@@ -9,7 +9,7 @@ const loggerMiddleware = (req, res, next) => {
 
     logger.info("Incoming request", {
     Method: req.method,
-    url: req.originalUrlUrl,
+    url: req.originalUrl,
     ip: req.ip
     })
 

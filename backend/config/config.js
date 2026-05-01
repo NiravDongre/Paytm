@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const CustomError = require("../utils/CustomError");
+const logger = require("../utils/logger");
 const ACCESS_JWT_SECRET = process.env.ACCESS_JWT_SECRET;
 const REFRESH_JWT_SECRET = process.env.REFRESH_JWT_SECRET;
 
@@ -15,9 +16,9 @@ if(!REFRESH_JWT_SECRET){
 const main = async () => {
   try{
    await mongoose.connect(process.env.MONGO_URL)
-   console.log("Connected");
-  }catch(e){
-    console.log("DataBase Crashed", e)
+   logger.info("DB Connected");
+  }catch(err){
+    logger.error("DataBase Crashed", {err})
   }
 }
 

@@ -9,7 +9,10 @@ const history = asyncHandler(async(req, res, next) => {
 
     const account = await DBAccount.findOne({ userId: req.userId })
 
+    
+
     if(!account){
+        
         return next(new CustomError(404, "Account not found"))
     }
 

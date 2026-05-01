@@ -113,9 +113,16 @@ const signup = asyncHandler(async(req, res, next) => {
 const signin = asyncHandler(async(req, res, next) => {
 
     const payload = req.body;
+
+    logger.info("Sign-in attempt",{
+        username: payload?.UserName
+    })
     const createpayload = ProtectedSignin.safeParse(payload);
 
     if(!createpayload.success){
+        logger.warn("Sign-in validation failed", {
+            error: createpayload.error,
+        })
         return next( new CustomError(401, "Pls put Correct Inputs"))
     }
 
@@ -126,12 +133,16 @@ const signin = asyncHandler(async(req, res, next) => {
     })
 
     if(!user){
+        logger.warn("User not Found", {
+            username: UserName
+        })
         return next(new CustomError(404, "User not Found"))
     }
 
     const MatchPassword = await bcrypt.compare(Password, user.Password)
 
     if(!MatchPassword){
+        logger.warn("PLS Enter valid password")
         return next(new CustomError(401, "Wrong Password"))
     }
 
@@ -151,6 +162,11 @@ const signin = asyncHandler(async(req, res, next) => {
     user.RefreshToken = refreshToken;
     await user.save()
 
+
+    logger.info("User successfully sign-In", {
+        username: UserName
+    })
+
     return res.status(200).json({
         status: "success",
         message: "SignedIn",
@@ -168,7 +184,8 @@ const loggout = asyncHandler(async(req, res) => {
 
     user.RefreshToken = null;
     await user.save();
-
+    
+    logger.info("User logged out")
     return res.status(200).json({
         message: "User logged out"
     })

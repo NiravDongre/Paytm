@@ -11,9 +11,14 @@ const balance = asyncHandler(async(req, res, next) => {
     })
 
     if(!account){
-        logger.warn("User's account not found", { account })
+        logger.warn("User's account not found", { 
+            account: account })
         return next(new CustomError(404, "Account not found"))
     }
+
+    logger.info("Balance fetched successfully",{
+        account: account
+    })
 
     return res.json({
         status: "success",
@@ -33,9 +38,16 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     const NumericAmount = Number(amount)
 
+    logger.info("Transaction attempt", {
+        userId: userId,
+        amount: NumericAmount,
+        ToAccount: to,
+        Idemkey: idempotencykey
+    })
+
     if(isNaN(NumericAmount) || NumericAmount <= 0){
-        logger.warn("invalid amount", {
-            NumericAmount
+        logger.warn("Invalid amount", {
+            Amount: NumericAmount
         })
         throw new CustomError(400, "invalid amount")
     }
@@ -44,8 +56,7 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     if(!account || account.balance < NumericAmount){
         logger.warn("Insufficent amount", {
-            account,
-            NumericAmount
+            Amount: NumericAmount
         })
         throw new CustomError(400, "Insufficent amount")
     }
@@ -54,7 +65,7 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     if(!toAccount){
         logger.warn("the receiver does not exists", {
-            toAccount
+            ToAccount: toAccount
         })
         await session.abortTransaction()
         return  next(new CustomError(404 ,"the receiver does not exists"))
@@ -62,7 +73,7 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     if(!idempotencykey){
         logger.warn("Idempotency key is required",{
-            idempotencykey
+            idemkey: idempotencykey
         })
         await session.abortTransaction()
         return next(new CustomError(404, "Idempotency key is required"))
@@ -101,13 +112,6 @@ const transfer = asyncHandler(async(req, res, next) => {
         Status: "PENDING"
     }, { session })
 
-    logger.info("Transaction Successed", {
-            userId,
-            amount,
-            to,
-            idempotencykey,
-    })
-
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
     await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
 
@@ -117,16 +121,21 @@ const transfer = asyncHandler(async(req, res, next) => {
     await session.commitTransaction()
     await session.endSession()
 
+    logger.info("Transaction Successed", {
+          userId: userId,
+          amount: amount,
+          ToAccount: toAccount,
+          idemkey: idempotencykey,
+    })
     return res.status(200).json({
         message: "Transaction successful"
     })
 
     } catch(err){
         logger.error("Transaction Failed", {
-            userId,
-            amount,
-            to,
-            idempontencykey
+            message: err.message,
+            From: req?.userId,
+            To: req.body?.to
         })
         await session.abortTransaction();
         await session.endSession();

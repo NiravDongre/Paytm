@@ -12,6 +12,7 @@ const ERROR = (err, req, res, next) => {
     url: req.OriginalUrl,
     stack: err.stack,
     message,
+    statusCode
 
 })
     return res.status(statusCode).json({status , message})

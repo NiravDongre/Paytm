@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const router = require("./routes/main-router");
 const ERROR = require("./middleware/errorHandler");
 const { main } = require("./config/config");
+const logger = require("./utils/logger");
 
 const app = express();
 
@@ -28,6 +29,6 @@ const PORT = process.env.PORT || 3000
 
 main().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server is running on Port ${PORT}`)
+    logger.info(`Server is running on Port ${PORT}`)
   })
 })

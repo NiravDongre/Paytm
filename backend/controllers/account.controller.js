@@ -6,6 +6,7 @@ const asyncHandler = require("../utils/asyncHandler")
 const logger = require("../utils/logger")
 
 const balance = asyncHandler(async(req, res, next) => {
+    
     const account = await DBAccount.findOne({
         userId: req.userId
     })
@@ -30,18 +31,22 @@ const balance = asyncHandler(async(req, res, next) => {
 const transfer = asyncHandler(async(req, res, next) => {
 
    const session = await mongoose.startSession();
+
+   const amount = req.body?.amount
+   const idempotencykey = req.body?.idempotencykey
+   const to = req.body?.to
+
     try{
     session.startTransaction();
 
     const userId = req.userId
-    const { amount, to, idempotencykey } = req.body;
 
     const NumericAmount = Number(amount)
 
     logger.info("Transaction attempt", {
-        userId: userId,
+        userId: req?.userId,
         amount: NumericAmount,
-        ToAccount: to,
+        ToAccount: req.body?.to,
         Idemkey: idempotencykey
     })
 
@@ -79,11 +84,34 @@ const transfer = asyncHandler(async(req, res, next) => {
         return next(new CustomError(404, "Idempotency key is required"))
     }
 
+
+
+    let transaction
+
+    try{
+    docs = await TransactionModel.create(
+        [{ 
+        fromAccount: account._id,
+        toAccount: toAccount._id,
+        amount: NumericAmount,
+        idempotencykey: idempotencykey,
+        Status: "PENDING"
+    }]
+    , { session }
+)
+
+    transaction = docs[0]
+} catch(err){
+
+    if(err.code === 11000){
+
+        await session.abortTransaction();
+        await session.endSession();
+
     const isIdempotencykeyExisted = await TransactionModel.findOne({
         idempotencykey: idempotencykey
     })
 
-    if(isIdempotencykeyExisted){
         if(isIdempotencykeyExisted.Status === "COMPLETED"){
             return res.status(200).json({
                 message: "Transaction already processed",
@@ -92,28 +120,31 @@ const transfer = asyncHandler(async(req, res, next) => {
         }
 
         if(isIdempotencykeyExisted.Status === "PENDING"){
-            return res.status(200).json({
+            return res.status(409).json({
                 message: "Transaction is still processing"
             })
         }
 
         if(isIdempotencykeyExisted.Status === "FAILED"){
+
+            logger.error("Transaction failed here's why:", {
+            message: err.message,
+            stack: err.stack,
+            error: err.error,
+            From: req?.userId,
+            To: req.body?.to
+            })
             return res.status(500).json({
                 message: "Transaction processing failed, please retry"
             })
         }
     }
 
-    const transaction = await TransactionModel.create({ 
-        fromAccount: account._id,
-        toAccount: toAccount._id,
-        amount: NumericAmount,
-        idempotencykey: idempotencykey,
-        Status: "PENDING"
-    }, { session })
+    throw err
+}
 
-    await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}).session(session)
-    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}).session(session);
+    await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}, { session })
+    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}, { session })
 
     transaction.Status = "COMPLETED";
     await transaction.save({ session })
@@ -134,9 +165,18 @@ const transfer = asyncHandler(async(req, res, next) => {
     } catch(err){
         logger.error("Transaction Failed", {
             message: err.message,
+            stack: err.stack,
+            error: err.error,
             From: req?.userId,
             To: req.body?.to
         })
+
+    if (idempotencykey) {
+        await TransactionModel.updateOne(
+            { idempotencykey },
+            { Status: "FAILED" }
+        );
+    }
         await session.abortTransaction();
         await session.endSession();
         next(err)

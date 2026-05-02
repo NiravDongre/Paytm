@@ -6,13 +6,13 @@ const transaction = new Schema({
     fromAccount : {
         type: ObjectId,
         ref: "account",
-        require: true,
+        required: true,
         index: true
     },
     toAccount : {
         type: ObjectId,
         ref: "account",
-        require: true,
+        required: true,
         index: true
     },
     amount : {

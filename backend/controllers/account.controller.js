@@ -68,7 +68,7 @@ const transfer = asyncHandler(async(req, res, next) => {
 
     const toAccount = await DBAccount.findOne({userId: to}).session(session)
 
-    if(!toAccount){
+    if(!toAccount || to === req.userId){
         logger.warn("the receiver does not exists", {
             ToAccount: toAccount
         })
@@ -84,12 +84,10 @@ const transfer = asyncHandler(async(req, res, next) => {
         return next(new CustomError(404, "Idempotency key is required"))
     }
 
-
-
     let transaction
 
     try{
-    docs = await TransactionModel.create(
+    const docs = await TransactionModel.create(
         [{ 
         fromAccount: account._id,
         toAccount: toAccount._id,
@@ -119,7 +117,13 @@ const transfer = asyncHandler(async(req, res, next) => {
             })
         }
 
+        const isStuck = (Date.now() - new Date(isIdempotencykeyExisted.createdAt)) > 10000
+
         if(isIdempotencykeyExisted.Status === "PENDING"){
+
+            if(isStuck){
+                return next(new CustomError(409, "Previous request stuck, retry with new key"))
+            }
             return res.status(409).json({
                 message: "Transaction is still processing"
             })
@@ -143,8 +147,16 @@ const transfer = asyncHandler(async(req, res, next) => {
     throw err
 }
 
+    const result = await DBAccount.updateOne(
+        {
+            userId: req.userId,
+            balance: { $gte: NumericAmount}
+        }, 
+        {$inc: { balance: -NumericAmount}}, 
+        { session })
+
+
     await DBAccount.updateOne({userId: to}, {$inc: { balance: NumericAmount}}, { session })
-    await DBAccount.updateOne({userId: req.userId}, {$inc: { balance: -NumericAmount}}, { session })
 
     transaction.Status = "COMPLETED";
     await transaction.save({ session })
@@ -155,7 +167,7 @@ const transfer = asyncHandler(async(req, res, next) => {
     logger.info("Transaction Successed", {
           userId: userId,
           amount: amount,
-          ToAccount: toAccount,
+          ToAccount: to,
           idemkey: idempotencykey,
     })
     return res.status(200).json({

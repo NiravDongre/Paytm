@@ -41,7 +41,7 @@ const history = asyncHandler(async(req, res, next) => {
     .skip(skip)
     .limit(limit)
 
-    logger.info("Transaction history successfull")
+    logger.info("Transaction history successful")
 
     return res.status(200).json({
         results: transactions.length,

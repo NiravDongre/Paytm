@@ -1,7 +1,6 @@
 require("dotenv").config()
 const express = require("express");
 const cors = require("cors");
-const ratelimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize")
 const helmet = require("helmet");
 const router = require("./routes/main-router");
@@ -12,11 +11,6 @@ const loggerMiddleware = require("./middleware/loggermiddleware");
 
 const app = express();
 
-const limiter = ratelimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 105,
-  message: "Please try again after 15 minutes"
-})
 
 app.use(loggerMiddleware)
 
@@ -25,7 +19,7 @@ app.use(mongoSanitize())
 app.use(helmet())
 app.use(cors());
 
-app.use("/api/v1", limiter)
+
 app.use("/api/v1/", router);
 
 app.use(ERROR);

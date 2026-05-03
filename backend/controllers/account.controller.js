@@ -33,7 +33,7 @@ const transfer = asyncHandler(async(req, res, next) => {
    const session = await mongoose.startSession();
 
    const amount = req.body?.amount
-   const idempotencykey = req.body?.idempotencykey
+   const idempotencykey = req.headers?.idempotencykey
    const to = req.body?.to
 
     try{

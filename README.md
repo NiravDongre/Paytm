@@ -3,6 +3,7 @@
 A production-grade peer-to-peer digital wallet backend built with Node.js, Express, and MongoDB. FlowPay handles real-world concerns like atomic money transfers, idempotent transactions, JWT refresh token rotation, and structured logging.
 
 **Live API:** https://flowpay-9051.onrender.com
+---
 **Postman Collection:** https://documenter.getpostman.com/view/50691700/2sBXqKozdv <-- **Click here**
 ---
 

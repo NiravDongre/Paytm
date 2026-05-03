@@ -14,7 +14,7 @@ const app = express();
 
 const limiter = ratelimit({
   windowMs: 15 * 60 * 1000,
-  limit: 15,
+  limit: 105,
   message: "Please try again after 15 minutes"
 })
 

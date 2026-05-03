@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  * {
+    @apply border-slate-800;
+  }
+}
+
+@layer components {
+  /* Input */
+  .fp-input {
+    @apply w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-100
+           placeholder:text-slate-500 font-body text-sm
+           focus:outline-none focus:border-ink-500 focus:ring-1 focus:ring-ink-500/40
+           transition-all duration-200;
+  }
+
+  /* Primary button */
+  .fp-btn {
+    @apply w-full bg-ink-500 hover:bg-ink-600 active:bg-ink-700
+           text-white font-display font-semibold text-sm rounded-xl
+           px-5 py-3 transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-ink-400/50;
+  }
+
+  /* Ghost button */
+  .fp-btn-ghost {
+    @apply w-full bg-transparent border border-slate-700 hover:border-slate-500
+           text-slate-300 hover:text-slate-100
+           font-display font-semibold text-sm rounded-xl
+           px-5 py-3 transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus:outline-none;
+  }
+
+  /* Card */
+  .fp-card {
+    @apply bg-slate-900/70 border border-slate-800 rounded-2xl backdrop-blur-sm;
+  }
+
+  /* Label */
+  .fp-label {
+    @apply block text-xs font-display font-medium tracking-wide text-slate-400 mb-1.5 uppercase;
+  }
+
+  /* Error text */
+  .fp-error {
+    @apply text-red-400 text-xs mt-1 font-body;
+  }
+
+  /* Badge */
+  .fp-badge-success {
+    @apply inline-flex items-center gap-1 bg-lime-400/10 text-lime-400 text-xs font-mono px-2 py-0.5 rounded-full;
+  }
+  .fp-badge-pending {
+    @apply inline-flex items-center gap-1 bg-yellow-400/10 text-yellow-400 text-xs font-mono px-2 py-0.5 rounded-full;
+  }
+  .fp-badge-failed {
+    @apply inline-flex items-center gap-1 bg-red-400/10 text-red-400 text-xs font-mono px-2 py-0.5 rounded-full;
+  }
+
+  /* Skeleton loader */
+  .fp-skeleton {
+    @apply rounded-lg bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800
+           bg-[length:400px_100%] animate-shimmer;
+  }
+}

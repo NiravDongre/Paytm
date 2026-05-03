@@ -1,47 +1,132 @@
-import { useState } from "react";
-import axios from "axios";
-import { Headerline } from "../components/Headerline";
-import { InputBox } from "../components/InputBox";
-import { PressingButton } from "../components/PressingButton";
-import { SubHead } from "../components/SubHead";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { signup } from '../api'
+import { useAuth } from '../context/AuthContext'
+import { Logo, AuthShell, Spinner, Toast } from '../components'
+import { useToast } from '../hooks/useToast'
 
+export default function Signup() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const { toast, showToast } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({ UserName: '', Email: '', Password: '', confirm: '' })
+  const [errors, setErrors] = useState({})
 
-export function Signup(){
-    const navigate = useNavigate()
-    const [ firstName, setfirstName ] = useState("");
-    const [ lastName, setlastName ] = useState("");
-    const [ password, setPassword ] = useState("");
+  function validate() {
+    const e = {}
+    if (!form.UserName.trim())          e.UserName = 'Username is required'
+    else if (form.UserName.length < 3)  e.UserName = 'At least 3 characters'
+    if (!form.Email.trim())             e.Email = 'Email is required'
+    else if (!/\S+@\S+\.\S+/.test(form.Email)) e.Email = 'Invalid email'
+    if (!form.Password)                 e.Password = 'Password is required'
+    else if (form.Password.length < 6)  e.Password = 'At least 6 characters'
+    if (form.confirm !== form.Password) e.confirm = 'Passwords do not match'
+    return e
+  }
 
-    return <>
-    <div className="Container  flex justify-center h-screen items-center">
-    <div className="grid w-96 h-[32rem] bg-blue-500 grid-col-1-gap-1 rounded-lg">
-    <Headerline headline={"Sign Up"}/>
-    <SubHead subline={"Enter your information to create an account"}/>
+  function set(key) {
+    return (e) => {
+      setForm(f => ({ ...f, [key]: e.target.value }))
+      setErrors(prev => ({ ...prev, [key]: '' }))
+    }
+  }
 
-    <InputBox onChange={e => {
-        setfirstName(e.target.value)
-    }} name={"First Name"} inputer={"Nirav"} />
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+    setLoading(true)
+    try {
+      await signup({ UserName: form.UserName, Email: form.Email, Password: form.Password })
+      login()
+      navigate('/dashboard')
+    } catch (err) {
+      showToast(err.message || 'Signup failed', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    <InputBox onChange={e => {
-        setlastName(e.target.value)
-    }} name={"Last Name"} inputer={"Dongre"}/>
+  return (
+    <AuthShell>
+      <Toast toast={toast} />
+      <div className="animate-fade-up">
+        <div className="text-center mb-8">
+          <Logo size="lg" />
+          <p className="mt-2 text-slate-400 text-sm font-body">Create your wallet account</p>
+        </div>
 
-    <InputBox onChange={e => {
-        setPassword(e.target.value)
-    }} name={"Password"} inputer={"123456"}/>
+        <div className="fp-card p-7 animate-fade-up-d1">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="fp-label">Username</label>
+              <input
+                className="fp-input"
+                placeholder="nirav_d"
+                value={form.UserName}
+                onChange={set('UserName')}
+                autoComplete="username"
+              />
+              {errors.UserName && <p className="fp-error">{errors.UserName}</p>}
+            </div>
 
-    <PressingButton onClick={async () => {
-        const response = await axios.post("http://localhost:3000/api/v1/user/signup",{
-            FirstName: firstName,
-            LastName: lastName,
-            Password: password
-        })
-        localStorage.setItem("token",response.data.token)
-        navigate("/Dashboard?id=" + response.data.userId)
-    }} label={"Sign Up"}/>
+            <div>
+              <label className="fp-label">Email</label>
+              <input
+                type="email"
+                className="fp-input"
+                placeholder="you@example.com"
+                value={form.Email}
+                onChange={set('Email')}
+                autoComplete="email"
+              />
+              {errors.Email && <p className="fp-error">{errors.Email}</p>}
+            </div>
 
-    </div>
-    </div>
-    </>
+            <div>
+              <label className="fp-label">Password</label>
+              <input
+                type="password"
+                className="fp-input"
+                placeholder="Min. 6 characters"
+                value={form.Password}
+                onChange={set('Password')}
+                autoComplete="new-password"
+              />
+              {errors.Password && <p className="fp-error">{errors.Password}</p>}
+            </div>
+
+            <div>
+              <label className="fp-label">Confirm Password</label>
+              <input
+                type="password"
+                className="fp-input"
+                placeholder="Repeat password"
+                value={form.confirm}
+                onChange={set('confirm')}
+                autoComplete="new-password"
+              />
+              {errors.confirm && <p className="fp-error">{errors.confirm}</p>}
+            </div>
+
+            <button type="submit" className="fp-btn mt-2" disabled={loading}>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Spinner className="w-4 h-4" /> Creating account…
+                </span>
+              ) : 'Create account'}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center mt-5 text-slate-500 text-sm font-body animate-fade-up-d2">
+          Already have an account?{' '}
+          <Link to="/signin" className="text-ink-400 hover:text-ink-300 transition-colors">
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </AuthShell>
+  )
 }

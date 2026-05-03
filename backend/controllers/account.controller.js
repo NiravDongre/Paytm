@@ -47,7 +47,7 @@ const transfer = asyncHandler(async(req, res, next) => {
         userId: req?.userId,
         amount: NumericAmount,
         ToAccount: req.body?.to,
-        Idemkey: idempotencykey
+        Idemkey: req.headers?.idempotencykey
     })
 
     if(isNaN(NumericAmount) || NumericAmount <= 0){

@@ -42,8 +42,7 @@ const bulk = asyncHandler(async(req, res) => {
     return res.json({
         status: "success",
         user: AllUser.map(users => ({
-            FirstName: users.FirstName,
-            LastName: users.LastName,
+            UserName: users.UserName,
             _id: users._id
         }))
     })

@@ -25,7 +25,7 @@ const userMiddleware = async (req, res, next) => {
   next()
   
   } catch(e){
-    const error = new CustomError(402, "The token is expired")
+    const error = new CustomError(401, "The token is expired")
     next(error)
 
   }

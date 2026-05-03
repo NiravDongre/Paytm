@@ -1,4 +1,4 @@
-const BASE = 'https://flowpay-9051.onrender.com/api/v1'
+const BASE = import.meta.env.VITE_API_URL;
 
 function getToken() {
   return localStorage.getItem('fp_access_token')

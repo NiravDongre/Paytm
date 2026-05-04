@@ -90,9 +90,10 @@ export default function SendMoney() {
                   onClick={() => selectUser(u)}
                   className="flex items-center gap-3 w-full px-4 py-3 hover:bg-slate-800/60 transition-colors text-left"
                 >
-                  <Avatar name={u.UserName} size="sm" />
+                  <Avatar name={u.UserName || u._id} size="sm" />
                   <div>
                     <p className="text-sm font-body font-medium text-slate-200">{u.UserName}</p>
+                    <p className="text-xs font-mono text-slate-500 truncate">{u._id}</p>
                   </div>
                 </button>
               ))}

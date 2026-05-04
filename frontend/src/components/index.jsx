@@ -63,7 +63,7 @@ export function AuthShell({ children }) {
 
 // ── Sidebar nav ──────────────────────────────────────────
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { loggout } from '../api'
 
 const navItems = [

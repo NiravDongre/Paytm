@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { getToken, clearTokens } from '../api'
+import { createContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext(null)
+export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [isAuthed, setIsAuthed] = useState(() => !!localStorage.getItem('fp_access_token'))
@@ -9,11 +8,12 @@ export function AuthProvider({ children }) {
   function login() { setIsAuthed(true) }
 
   function logout() {
-    clearTokens()
+    localStorage.removeItem('fp_access_token')
+    localStorage.removeItem('fp_refresh_token')
+    localStorage.removeItem('fp_user_id')
     setIsAuthed(false)
   }
 
-  // Sync across tabs
   useEffect(() => {
     const handler = () => setIsAuthed(!!localStorage.getItem('fp_access_token'))
     window.addEventListener('storage', handler)
@@ -25,8 +25,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  return useContext(AuthContext)
 }
